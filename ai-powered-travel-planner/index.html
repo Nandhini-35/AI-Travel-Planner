@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Travel Planner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="background-globes"></div>
+    <div class="container">
+        <header>
+            <h1>AI Travel Planner</h1>
+            <p>Discover your next adventure with intelligent, personalized recommendations.</p>
+        </header>
+
+        <main class="glass-panel">
+            <form action="/recommend" method="POST">
+                <div class="form-group">
+                    <label for="starting_city">Starting City</label>
+                    <input type="text" name="starting_city" id="starting_city" placeholder="e.g. Bangalore" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="city">Destination City</label>
+                    <select name="city" id="city" required>
+                        <option value="" disabled selected>Select a city...</option>
+                        {% for city in cities %}
+                        <option value="{{ city }}">{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="type">Interest Type</label>
+                    <select name="type" id="type" required>
+                        <option value="" disabled selected>What's your vibe?</option>
+                        {% for type in types %}
+                        <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="budget">Max Entry Fee Budget (₹)</label>
+                    <input type="number" name="budget" id="budget" placeholder="e.g. 500" min="0" required>
+                    <small>For entrance fees/tickets only.</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="travelers">Travelers</label>
+                        <input type="number" name="travelers" id="travelers" value="1" min="1">
+                    </div>
+                    <div class="form-group half">
+                        <label for="days">Days (Optional)</label>
+                        <input type="number" name="days" id="days" value="1" min="1">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Plan My Trip</button>
+            </form>
+        </main>
+    </div>
+</body>
+
+</html>
