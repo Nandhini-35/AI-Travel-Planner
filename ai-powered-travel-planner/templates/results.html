@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Trip Plan</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="background-globes"></div>
+    <div class="container wide">
+        <header>
+            <h1>Your Itinerary for {{ city }}</h1>
+            <a href="/" class="btn-secondary">Plan Another Trip</a>
+        </header>
+
+        {% if journey_details %}
+        <div class="journey-panel glass-panel">
+            <h2>🚗 Journey Details</h2>
+            <div class="journey-info">
+                <p><strong>{{ journey_details.start }}</strong> ➔ <strong>{{ journey_details.end }}</strong></p>
+                <p>Distance: {{ journey_details.distance }} km</p>
+                <p class="highlight-mode">Recommended Mode: {{ journey_details.mode }}</p>
+                <small>Reason: {{ journey_details.reason }}</small>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if plan_b_message %}
+        <div class="alert-box">
+            <h3>⚠️ Intelligent Adjustment</h3>
+            <p>{{ plan_b_message }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Cost Breakdown Section -->
+        <div class="cost-panel glass-panel">
+            <h2>💰 Estimated Trip Cost Breakdown</h2>
+            <div class="cost-grid">
+                <div class="cost-item">
+                    <span>Stay + Food + Travel</span>
+                    <strong>₹{{ cost_breakdown.stay_food }}</strong>
+                    <small>(@ ₹{{ cost_breakdown.avg_budget_per_person }}/person/day)</small>
+                </div>
+                <div class="cost-item">
+                    <span>Entry Fees</span>
+                    <strong>₹{{ cost_breakdown.entry_fees }}</strong>
+                    <small>(Total for {{ travelers }} travelers)</small>
+                </div>
+                <div class="cost-item total">
+                    <span>Total Approx Cost</span>
+                    <strong>₹{{ cost_breakdown.total }}</strong>
+                </div>
+            </div>
+        </div>
+
+        {% if itinerary %}
+        <div class="itinerary-section">
+            <h2>🗓️ Day-wise Itinerary</h2>
+            {% for day, places in itinerary.items() %}
+            <div class="day-block glass-panel">
+                <h3>{{ day }}</h3>
+                <ul class="place-list">
+                    {% for p in places %}
+                    <li>
+                        <strong>{{ p['place'] }}</strong> ({{ p['time needed to visit in hrs'] }} hrs)
+                        <br>
+                        <span class="badg-mini">{{ p['type'] }}</span> - Entry: ₹{{ p['Entrance Fee in INR'] }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-panel">
+            <p>No itinerary could be generated based on the selected criteria.</p>
+        </div>
+        {% endif %}
+
+        <div class="results-grid">
+            <h3>Feasible Candidates (Details)</h3>
+            {% for rec in recommendations %}
+            <div class="card glass-panel">
+                <div class="card-header">
+                    <h2>{{ rec.place }}</h2>
+                    <span class="badge">{{ rec.type }}</span>
+                </div>
+
+                <div class="card-body">
+                    <p class="rating">⭐ {{ rec.rating }} / 5.0</p>
+                    <p class="cost"><strong>Est. Total Trip Impact:</strong> ₹{{ rec.est_total_cost }}</p>
+
+                    <div class="xai-box">
+                        <strong>Why this?</strong>
+                        <p>{{ rec.explanation }}</p>
+                    </div>
+
+                    <div class="logistics-box">
+                        <strong>Go there by:</strong> {{ rec.travel_mode }} (~{{ rec.travel_cost }})
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>
