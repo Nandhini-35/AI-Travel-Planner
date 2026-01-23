@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore {{ city }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="container wide">
+        <header>
+            <h1>Exploring All of {{ city }}</h1>
+            <div class="header-actions">
+                <a href="/" class="btn-secondary">Back to Planner</a>
+            </div>
+        </header>
+
+        <div class="results-grid">
+            {% for place in places %}
+            <div class="card glass-panel">
+                <div class="card-header">
+                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-main);">{{ place['place'] }}
+                    </h2>
+                    <span class="badge">{{ place['type'] }}</span>
+                </div>
+                <div class="card-body" style="margin-top: 1rem;">
+                    <p class="rating" style="margin-bottom: 0.5rem;">⭐ {{ place['ratings'] }}</p>
+                    <p class="cost" style="font-size: 0.95rem; color: var(--text-main);"><strong>Entry Fee:</strong> ₹{{
+                        place['Entrance Fee in INR'] }}</p>
+                    <p class="time" style="font-size: 0.95rem; color: var(--text-muted);"><strong>Time to
+                            Visit:</strong> {{ place['time needed to visit in hrs'] }} hrs</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>
