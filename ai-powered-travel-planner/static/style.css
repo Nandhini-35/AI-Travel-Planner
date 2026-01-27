@@ -1,0 +1,383 @@
+:root {
+    /* Premium Earth Palette */
+    --bg-color: #F9F8F4;
+    /* Warm Alabaster */
+    --card-bg: #FFFFFF;
+    /* Pure White */
+    --text-main: #1A3C40;
+    /* Deep Jungle Teal */
+    --text-muted: #5C7679;
+    /* Muted Teal-Grey */
+    --primary-color: #D97706;
+    /* Burnt Amber */
+    --primary-hover: #B45309;
+    /* Darker Amber */
+    --accent-color: #4D7C0F;
+    /* Moss Green */
+    --border-color: #E5E7EB;
+    /* Light Grey */
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+    --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.08);
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Outfit', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    overflow-x: hidden;
+    position: relative;
+    background-image: url('travel_hero.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* Overlay for readability on all pages */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(249, 248, 244, 0.6);
+    /* Matching --bg-color with transparency */
+    z-index: -1;
+}
+
+/* No more floating globes - clean background */
+.background-globes {
+    display: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: var(--font-heading);
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+    background: none;
+    background-clip: border-box;
+    /* Fix lint */
+    -webkit-text-fill-color: initial;
+}
+
+/* Container & Cards */
+.container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.container.wide {
+    max-width: 1300px;
+}
+
+.glass-panel {
+    /* Renaming logic: Now "Paper Card" style */
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: none;
+    /* Removed blur for sharpness */
+}
+
+/* Buttons */
+.btn-primary {
+    width: 100%;
+    padding: 0.8rem 1.5rem;
+    /* Consistent height */
+    border-radius: 50px;
+    /* Pill shape */
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.2);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(217, 119, 6, 0.3);
+}
+
+.btn-secondary {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    /* Match primary height */
+    border-radius: 50px;
+    background: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-secondary.highlight-btn {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(217, 119, 6, 0.05);
+}
+
+.btn-secondary.highlight-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Form Inputs */
+label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.95rem;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 0.85rem;
+    border-radius: 8px;
+    border: 1px solid #D1D5DB;
+    /* Slightly darker grey */
+    background: white;
+    color: var(--text-main);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+/* Results Formatting */
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.premium-card {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+}
+
+/* Journey Trip Pass */
+.journey-card {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #FDE68A;
+}
+
+.journey-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: var(--primary-color);
+}
+
+.route-display {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.route-point {
+    text-align: center;
+    flex: 0 0 100px;
+}
+
+.route-point .city-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--text-main);
+    display: block;
+}
+
+.route-point .label {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.route-line-container {
+    flex-grow: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    opacity: 0.5;
+}
+
+.route-line {
+    height: 1px;
+    background: repeating-linear-gradient(90deg, var(--text-muted), var(--text-muted) 5px, transparent 5px, transparent 10px);
+    width: 100%;
+}
+
+.route-icon {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #FFFBEB;
+    padding: 0 8px;
+    font-size: 1.25rem;
+}
+
+/* Itinerary Boxed Blocks */
+.day-block h3 {
+    border-bottom: 2px solid var(--primary-color);
+    display: inline-block;
+    padding-bottom: 0.3rem;
+    margin-bottom: 1.5rem;
+}
+
+.place-list-simple li {
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.place-list-simple li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Cost Grid V2 */
+.cost-grid-v2 {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.cost-card-mini {
+    background: white;
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    flex: 1;
+    min-width: 180px;
+    text-align: center;
+}
+
+.cost-card-mini .icon-box {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.cost-card-mini .label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.cost-card-mini .val {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.cost-card-mini.total-hero {
+    background: var(--text-main);
+    color: white;
+    border: none;
+}
+
+.cost-card-mini.total-hero .val {
+    color: var(--primary-color);
+}
+
+.cost-card-mini.total-hero .label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Misc Utilities */
+.section-title {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    display: inline-block;
+    padding-bottom: 0.4rem;
+}
+
+.badg-mini {
+    display: inline-block;
+    padding: 2px 6px;
+    background: #ECFDF5;
+    color: var(--accent-color);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    .route-display {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .route-line-container {
+        display: none;
+    }
+}

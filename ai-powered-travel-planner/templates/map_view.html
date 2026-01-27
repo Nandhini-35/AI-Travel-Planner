@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Travel Map - {{ city }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .map-page-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Sidebar Styling */
+        .map-sidebar {
+            width: 450px;
+            height: 100%;
+            overflow-y: auto;
+            background: white;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .sidebar-content {
+            padding: 1.5rem;
+            flex-grow: 1;
+        }
+
+        /* Place Card in Sidebar */
+        .place-item {
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            position: relative;
+        }
+
+        .place-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .place-item.active {
+            border-color: var(--primary-color);
+            background: #fff1f2;
+        }
+
+        .place-item h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .place-item .day-tag {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            font-size: 0.75rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .place-item .meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Map Container */
+        .map-main {
+            flex-grow: 1;
+            height: 100%;
+            position: relative;
+        }
+
+        #map-full {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Floating Back Button */
+        .btn-back-float {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: transform 0.2s;
+        }
+
+        .btn-back-float:hover {
+            transform: scale(1.05);
+        }
+
+        /* Custom Popup Styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            padding: 5px;
+        }
+
+        .leaflet-popup-content b {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="map-page-container">
+        <!-- Sidebar -->
+        <div class="map-sidebar">
+            <div class="sidebar-header">
+                <h1>📍 Route Explorer</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">Places scheduled for {{ city }}
+                </p>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <form action="/recommend" method="POST" style="display: inline;">
+                        <!-- Pass original search params back if needed to 'return' -->
+                        <input type="hidden" name="city" value="{{ city }}">
+                        <input type="hidden" name="starting_city"
+                            value="{{ journey_details.start if journey_details else '' }}">
+                        <input type="hidden" name="type" value="{{ interest_type }}">
+                        <input type="hidden" name="budget" value="{{ budget }}">
+                        <input type="hidden" name="travelers" value="{{ travelers }}">
+                        <input type="hidden" name="days" value="{{ days }}">
+                        <button type="submit"
+                            style="background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 0.85rem; font-weight: 600;">⬅
+                            Back</button>
+                    </form>
+                    <span style="color: #cbd5e1;">|</span>
+                    <a href="/explore/{{ city }}"
+                        style="text-decoration: none; color: var(--primary-color); font-size: 0.85rem; font-weight: 600;">Show
+                        More</a>
+                </div>
+            </div>
+
+            <div class="sidebar-content">
+                {% set count = 0 %}
+                {% for day, places in itinerary.items() %}
+                {% if places and places != "BUDGET_EXHAUSTED" %}
+                {% for p in places %}
+                {% set details = recommendations | selectattr('place', 'equalto', p.place) | first %}
+                <div class="place-item" id="item-{{ loop.index0 + count }}"
+                    onmouseenter="highlightMarker('{{ p.place }}')" onclick="focusMarker('{{ p.place }}')">
+                    <span class="day-tag">{{ day }}</span>
+                    <h3>{{ p['place'] }}</h3>
+                    <div class="meta">
+                        <span> {{ details.rating if details else 'N/A' }}</span>
+                        <span> {{ p['time needed to visit in hrs'] }} hrs</span>
+                        <span> ₹{{ p['Entrance Fee in INR'] }}</span>
+                    </div>
+                    <p style="margin: 8px 0 0 0; font-size: 0.8rem; color: #64748b; line-height: 1.4;">{{
+                        details.explanation if details else '' }}</p>
+                </div>
+                {% endfor %}
+                {% set count = count + places|length %}
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Main Map Area -->
+        <div class="map-main">
+            <a href="/" class="btn-back-float"> Home</a>
+            <div id="map-full"></div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const recs = {{ recommendations | tojson }};
+        const itinerary = {{ itinerary | tojson }};
+        let leafMap;
+        let markers = {};
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initMap();
+        });
+
+        function initMap() {
+            leafMap = L.map('map-full', {
+                scrollWheelZoom: true,
+                attributionControl: false
+            });
+
+            // Aggregate all places from itinerary to show on map
+            const plannedPlaces = [];
+            for (const day in itinerary) {
+                if (Array.isArray(itinerary[day])) {
+                    itinerary[day].forEach(p => {
+                        const details = recs.find(r => r.place === p.place);
+                        if (details) {
+                            plannedPlaces.push(details);
+                        }
+                    });
+                }
+            }
+
+            const displayPlaces = plannedPlaces.length > 0 ? plannedPlaces : recs;
+
+            if (displayPlaces.length > 0) {
+                leafMap.setView([displayPlaces[0].lat, displayPlaces[0].lng], 13);
+            } else {
+                leafMap.setView([20.5937, 78.9629], 5);
+            }
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors © CARTO'
+            }).addTo(leafMap);
+
+            const boundsGroup = [];
+            displayPlaces.forEach(p => {
+                const marker = L.marker([p.lat, p.lng])
+                    .addTo(leafMap)
+                    .bindPopup(`
+                        <div style="font-family: 'Outfit', sans-serif;">
+                            <b style="font-size: 1rem;">${p.place}</b><br>
+                            <span style="color: #666;">${p.type}</span><br>
+                            <span style="color: #F59E0B;"> ${p.rating}</span>
+                        </div>
+                    `);
+
+                markers[p.place] = marker;
+                boundsGroup.push([p.lat, p.lng]);
+            });
+
+            if (boundsGroup.length > 1) {
+                const bounds = L.latLngBounds(boundsGroup);
+                leafMap.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        function highlightMarker(placeName) {
+            const marker = markers[placeName];
+            if (marker) {
+                marker.openPopup();
+                // Find all items and remove active class
+                document.querySelectorAll('.place-item').forEach(el => el.classList.remove('active'));
+                // Find visible item by h3 text
+                const items = document.querySelectorAll('.place-item h3');
+                items.forEach(h3 => {
+                    if (h3.innerText === placeName) {
+                        h3.parentElement.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        function focusMarker(placeName) {
+            const marker = markers[placeName];
+            if (marker) {
+                leafMap.panTo(marker.getLatLng());
+                marker.openPopup();
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -6,107 +6,240 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Trip Plan</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .itinerary-container {
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+            padding: 1rem 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) #f0f0f0;
+        }
+
+        .itinerary-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .itinerary-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .day-column {
+            min-width: 320px;
+            max-width: 320px;
+            flex-shrink: 0;
+        }
+
+        .integrated-map-container {
+            height: 400px;
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
 </head>
 
 <body>
     <div class="background-globes"></div>
     <div class="container wide">
-        <header>
-            <h1>Your Itinerary for {{ city }}</h1>
-            <a href="/" class="btn-secondary">Plan Another Trip</a>
+
+        <header style="margin-bottom: 3rem; text-align: left;">
+            <h1 style="font-size: 2.5rem; text-shadow: 0 4px 15px rgba(0,0,0,0.1); color: var(--text-main);">Your
+                Voyage to {{ city }}</h1>
+            <p style="font-size: 1.1rem; color: var(--text-main); margin-top: 0.5rem; opacity: 0.85;">A curated
+                travel plan centered on your preferences.</p>
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                <a href="/" class="btn-secondary" style="padding: 0.6rem 1.5rem; font-size: 0.85rem;">⬅ Plan Another
+                    Trip</a>
+                <a href="/explore/{{ city }}" class="btn-secondary"
+                    style="padding: 0.6rem 1.5rem; font-size: 0.85rem;">📍 More in {{ city }}</a>
+            </div>
         </header>
 
-        {% if journey_details %}
-        <div class="journey-panel glass-panel">
-            <h2>🚗 Journey Details</h2>
-            <div class="journey-info">
-                <p><strong>{{ journey_details.start }}</strong> ➔ <strong>{{ journey_details.end }}</strong></p>
-                <p>Distance: {{ journey_details.distance }} km</p>
-                <p class="highlight-mode">Recommended Mode: {{ journey_details.mode }}</p>
-                <small>Reason: {{ journey_details.reason }}</small>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if plan_b_message %}
-        <div class="alert-box">
-            <h3>⚠️ Intelligent Adjustment</h3>
-            <p>{{ plan_b_message }}</p>
-        </div>
-        {% endif %}
-
-        <!-- Cost Breakdown Section -->
-        <div class="cost-panel glass-panel">
-            <h2>💰 Estimated Trip Cost Breakdown</h2>
-            <div class="cost-grid">
-                <div class="cost-item">
-                    <span>Stay + Food + Travel</span>
-                    <strong>₹{{ cost_breakdown.stay_food }}</strong>
-                    <small>(@ ₹{{ cost_breakdown.avg_budget_per_person }}/person/day)</small>
-                </div>
-                <div class="cost-item">
-                    <span>Entry Fees</span>
-                    <strong>₹{{ cost_breakdown.entry_fees }}</strong>
-                    <small>(Total for {{ travelers }} travelers)</small>
-                </div>
-                <div class="cost-item total">
-                    <span>Total Approx Cost</span>
-                    <strong>₹{{ cost_breakdown.total }}</strong>
-                </div>
-            </div>
-        </div>
-
-        {% if itinerary %}
-        <div class="itinerary-section">
-            <h2>🗓️ Day-wise Itinerary</h2>
-            {% for day, places in itinerary.items() %}
-            <div class="day-block glass-panel">
-                <h3>{{ day }}</h3>
-                <ul class="place-list">
-                    {% for p in places %}
-                    <li>
-                        <strong>{{ p['place'] }}</strong> ({{ p['time needed to visit in hrs'] }} hrs)
-                        <br>
-                        <span class="badg-mini">{{ p['type'] }}</span> - Entry: ₹{{ p['Entrance Fee in INR'] }}
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="glass-panel">
-            <p>No itinerary could be generated based on the selected criteria.</p>
-        </div>
-        {% endif %}
-
-        <div class="results-grid">
-            <h3>Feasible Candidates (Details)</h3>
-            {% for rec in recommendations %}
-            <div class="card glass-panel">
-                <div class="card-header">
-                    <h2>{{ rec.place }}</h2>
-                    <span class="badge">{{ rec.type }}</span>
-                </div>
-
-                <div class="card-body">
-                    <p class="rating">⭐ {{ rec.rating }} / 5.0</p>
-                    <p class="cost"><strong>Est. Total Trip Impact:</strong> ₹{{ rec.est_total_cost }}</p>
-
-                    <div class="xai-box">
-                        <strong>Why this?</strong>
-                        <p>{{ rec.explanation }}</p>
+        <!-- Step 1: Itinerary & Map -->
+        <div id="step-1">
+            <!-- TRIP LOGISTICS & BUDGET -->
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <!-- Logistics -->
+                <div class="journey-card premium-card" style="margin: 0;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(217, 119, 6, 0.1); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                        <h2
+                            style="margin: 0; font-size: 0.8rem; letter-spacing: 0.2em; color: var(--primary-color); font-weight: 700;">
+                            TRIP LOGISTICS</h2>
+                        <span style="font-weight: 700; color: var(--text-muted); font-size: 0.75rem;">{{
+                            journey_details.mode | upper }}</span>
                     </div>
+                    <div class="route-display">
+                        <div class="route-point">
+                            <span class="label">From</span>
+                            <span class="city-name" style="font-size: 1.1rem;">{{ journey_details.start }}</span>
+                        </div>
+                        <div class="route-line-container">
+                            <div class="route-line"></div>
+                            <div class="route-icon">{% if journey_details.mode == 'Flight' %}✈️{% elif
+                                journey_details.mode == 'Train/Bus' %}🚂{% else %}🚗{% endif %}</div>
+                        </div>
+                        <div class="route-point">
+                            <span class="label">To</span>
+                            <span class="city-name" style="font-size: 1.1rem;">{{ city }}</span>
+                        </div>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 8px;">
+                        <div>
+                            <small class="label"
+                                style="display: block; margin-bottom: 2px; color: var(--text-muted); font-size: 0.65rem;">Distance</small>
+                            <strong style="font-size: 1rem; color: var(--text-main);">{{ journey_details.distance }}
+                                km</strong>
+                        </div>
+                        <div style="text-align: right; max-width: 60%;">
+                            <small class="label"
+                                style="display: block; margin-bottom: 2px; color: var(--text-muted); font-size: 0.65rem;">Strategy</small>
+                            <p style="margin: 0; font-size: 0.8rem; color: var(--text-main); line-height: 1.2;">{{
+                                journey_details.reason }}</p>
+                        </div>
+                    </div>
+                </div>
 
-                    <div class="logistics-box">
-                        <strong>Go there by:</strong> {{ rec.travel_mode }} (~{{ rec.travel_cost }})
+                <!-- Budget -->
+                <div class="premium-card" style="margin: 0;">
+                    <h2 class="section-title" style="font-size: 1rem; margin-bottom: 1.5rem;"> Cost Breakdown</h2>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #f9fafb; border-radius: 8px;">
+                            <span style="font-size: 0.9rem;"> Stay & Food</span>
+                            <strong style="color: var(--primary-color);">₹{{ cost_breakdown.stay_food }}</strong>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #f9fafb; border-radius: 8px;">
+                            <span style="font-size: 0.9rem;"> Entry Fees</span>
+                            <strong style="color: var(--primary-color);">₹{{ cost_breakdown.entry_fees }}</strong>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--primary-color); border-radius: 8px; color: white;">
+                            <span style="font-weight: 600;">Total Approx</span>
+                            <strong style="font-size: 1.1rem;">₹{{ cost_breakdown.total }}</strong>
+                        </div>
                     </div>
                 </div>
             </div>
-            {% endfor %}
+
+            {% if plan_b_message %}
+            <div class="premium-card"
+                style="padding: 1rem; border-left: 5px solid #FCD34D; background: rgba(255, 251, 235, 0.9); margin-bottom: 2rem;">
+                <p style="margin: 0; color: #92400E; font-size: 0.85rem;">💡 <b>Adjustment:</b> {{ plan_b_message }}</p>
+            </div>
+            {% endif %}
+
+            <!-- ITINERARY SECTION -->
+            {% if itinerary %}
+            <div class="section-header">
+                <h2 class="section-title" style="margin: 0;">🗓️ Day-wise Itinerary</h2>
+            </div>
+
+            <div class="itinerary-container">
+                {% for day, places in itinerary.items() %}
+                <div class="day-column">
+                    <div class="day-block premium-card" style="height: 100%; margin: 0; background: white;">
+                        <h3
+                            style="margin-bottom: 1.5rem; font-size: 1.2rem; color: var(--primary-color); border-bottom: 2px solid #fecaca; display: inline-block;">
+                            {{ day }}</h3>
+
+                        {% if places == "BUDGET_EXHAUSTED" %}
+                        <div
+                            style="padding: 2rem 1rem; text-align: center; background: #fff1f2; border-radius: 10px; border: 1px dashed #fda4af;">
+                            <p style="color: #be123c; font-size: 0.9rem; margin: 0;">⚠️ Budget exhausted for this day's
+                                entry fees.</p>
+                        </div>
+                        {% elif not places %}
+                        <div
+                            style="padding: 2rem 1rem; text-align: center; background: #f3f4f6; border-radius: 10px; border: 1px dashed #d1d5db;">
+                            <p style="color: #6b7280; font-size: 0.9rem; margin: 0;">Relax and explore the city at your
+                                own pace.</p>
+                        </div>
+                        {% else %}
+                        <ul class="place-list-simple" style="list-style: none; padding: 0;">
+                            {% for p in places %}
+                            <li
+                                style="margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 1px solid #f3f4f6;">
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <strong style="font-size: 1rem; color: var(--text-main);">{{ p['place'] }}</strong>
+                                    <div
+                                        style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
+                                        <span> {{ p['time needed to visit in hrs'] }} hrs</span>
+                                        <span>•</span>
+                                        <span> ₹{{ p['Entrance Fee in INR'] }}</span>
+                                    </div>
+                                    <span
+                                        style="font-size: 0.75rem; color: var(--accent-color); font-weight: 600; margin-top: 2px;">{{
+                                        p['type'] }}</span>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- NEXT STEP TO MAP -->
+            <div
+                style="margin-top: 3rem; text-align: center; padding: 2rem; background: rgba(255,255,255,0.5); border-radius: 20px; border: 1px dashed rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 1rem; color: var(--text-main);">Ready to explore the route?</h3>
+                <form action="/map" method="POST">
+                    <input type="hidden" name="city" value="{{ city }}">
+                    <input type="hidden" name="starting_city"
+                        value="{{ journey_details.start if journey_details else '' }}">
+                    <input type="hidden" name="type" value="{{ interest_type }}">
+                    <input type="hidden" name="budget" value="{{ budget }}">
+                    <input type="hidden" name="travelers" value="{{ travelers }}">
+                    <input type="hidden" name="days" value="{{ days }}">
+
+                    <button type="submit" class="btn-primary"
+                        style="width: auto; padding: 1.2rem 4rem; font-size: 1.1rem; border-radius: 50px; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);">
+                        Next: View Interactive Map & Directions ➔
+                    </button>
+                </form>
+            </div>
+
+            {% else %}
+            <div class="premium-card" style="text-align: center; padding: 3rem;">
+                <p style="margin-bottom: 1.5rem;">We couldn't generate a specific itinerary for these settings.</p>
+                <a href="/" class="btn-primary" style="width: auto;">Adjust My Settings</a>
+            </div>
+            {% endif %}
         </div>
+
+        <footer
+            style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(0,0,0,0.05); text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            <p>© 2026 AI Powered Travel Planner - Making journeys easier.</p>
+        </footer>
     </div>
+
+    <!-- Leaflet JS removed from here since map moved to next page -->
 </body>
 
 </html>
