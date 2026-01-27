@@ -2,6 +2,7 @@ services:
   - type: web
     name: ai-powered-travel-planner
     runtime: python
+    rootDirectory: ai-powered-travel-planner
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
