@@ -23,16 +23,12 @@ This project focuses on **AI logic and decision-making**, not just UI filtering 
 
 ##  Core AI Ideas Used
 
-- Constraint Satisfaction AI  
-- Planning & Optimization AI  
-- Rule-Based Decision Making  
-- Explainable AI (XAI)  
-- Content-Based Recommender System  
-- Reasoning AI (Plan-B logic)  
-- API-assisted Geo Reasoning  
-- Optional LLM-based Natural Language Generation  
-
----
+- Constraint Satisfaction AI: Filtering places based on strict budget/time limits.
+- Planning & Optimization AI: Greedy algorithm for itinerary generation.
+- Explainable AI (XAI): Rule-based natural language generation for "Why this place?".
+- Content-Based Recommender System: Recommending similar places based on user interest.
+- Reasoning AI (Plan-B logic): Automatically relaxing constraints if no exact matches are found.
+- LLM Integration: Natural Language Generation via OpenRouter API.
 
 ##  Overall Workflow (Step-by-Step)
 
@@ -46,7 +42,7 @@ This project focuses on **AI logic and decision-making**, not just UI filtering 
 2. System reads place data from the dataset.
 
 3. The system calculates:
-   - Stay + food cost using `avg_daily_cost_per_person`
+   - Stay + food cost using `avg_budget`
    - Entry fee cost for places
    - Total estimated trip cost
 
@@ -119,4 +115,25 @@ AI-Powered-Travel-Planner/
 │
 └── README.md                      # Project documentation
 ```
+## Installation & Deployment
+
+Local Setup
+1. Clone the repo and install dependencies:
+      pip install -r requirements.txt
+2. Create a.env file and add your key:
+      env
+      OPENROUTER_API_KEY=your_key_here
+3. Run the app:
+      python app.py
+## Render Deployment
+This project is pre-configured for Render. Simply connect your GitHub repository, add your OPENROUTER_API_KEY in the Environment tab, and set the Root Directory to ai-powered-travel-planner.
+
+## Output 
+<img width="1890" height="911" alt="Screenshot 2026-01-27 154001" src="https://github.com/user-attachments/assets/b86d020f-7614-4006-952d-d7dd4d9f4250" />
+<img width="1887" height="907" alt="Screenshot 2026-01-27 154051" src="https://github.com/user-attachments/assets/3d5b77e3-3c25-4a94-bf1c-cb3b9bf56bad" />
+<img width="1905" height="913" alt="Screenshot 2026-01-27 154155" src="https://github.com/user-attachments/assets/5fdfd90a-48db-4b24-a143-829e673c82b7" />
+<img width="1885" height="912" alt="Screenshot 2026-01-27 154525" src="https://github.com/user-attachments/assets/c860a8a8-8821-4441-912e-1de19ecf1662" />
+
+
+
 
